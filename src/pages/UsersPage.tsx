@@ -5,6 +5,7 @@ import { Users, UsersRound } from 'lucide-react'
 import { MembersTab } from './MembersTab'
 
 import { useAuthStore } from '../store/authStore'
+
 import { useOrganizationStore } from '../store/organizationStore'
 
 import { searchUsers } from '../api/users'
@@ -120,6 +121,7 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
+
       <div>
         <h1 className="flex items-center gap-3 text-2xl font-bold">
           <span className="grid h-10 w-10 place-items-center rounded-md bg-emerald-50 text-emerald-700">
@@ -199,13 +201,14 @@ export function UsersPage() {
             onResetError={handleResetError}
           />
         </div>
-      ) : (
-        <MembersTab
-          sortedOrganizations={orgs}
-          organizationsLoading={false}
-          organizationsLoaded={true}
-          onResetError={handleResetError}
-        />
+        ) : (
+          <MembersTab
+            sortedOrganizations={orgs}
+            organizationsLoading={false}
+            organizationsLoaded={true}
+            onResetError={handleResetError}
+            fixedOrganizationId={activeOrganization?.id}
+          />
       )}
     </div>
   )

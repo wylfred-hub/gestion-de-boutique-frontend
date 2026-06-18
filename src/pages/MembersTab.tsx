@@ -16,7 +16,13 @@ type MembersTabProps = {
   organizationsLoading: boolean
   organizationsLoaded: boolean
   onResetError: () => void
+  /**
+   * Quand défini, on force l'organisation active et on masque le select.
+   * Utile pour le mode admin (non super_admin) : organisation = celle en cours.
+   */
+  fixedOrganizationId?: string
 }
+
 
 type MemberRow = {
   id: string
@@ -30,8 +36,21 @@ export function MembersTab({
   organizationsLoading,
   organizationsLoaded,
   onResetError,
+  fixedOrganizationId,
 }: MembersTabProps) {
   const [organizationId, setOrganizationId] = useState<string>('')
+
+  useEffect(() => {
+    if (fixedOrganizationId) {
+      setOrganizationId(fixedOrganizationId)
+      return
+    }
+
+    if (!organizationsLoading && organizationsLoaded && sortedOrganizations.length > 0) {
+      setOrganizationId(sortedOrganizations[0].id)
+    }
+  }, [fixedOrganizationId, organizationsLoading, organizationsLoaded, sortedOrganizations])
+
 
   const [loading, setLoading] = useState(false)
   const [membersError, setMembersError] = useState<string | null>(null)
@@ -47,11 +66,7 @@ export function MembersTab({
 
   const availableRoles = useMemo(() => ['admin', 'vendeur'] as MemberRole[], [])
 
-  useEffect(() => {
-    if (!organizationsLoading && organizationsLoaded && sortedOrganizations.length > 0) {
-      setOrganizationId(sortedOrganizations[0].id)
-    }
-  }, [organizationsLoading, organizationsLoaded, sortedOrganizations])
+
 
   useEffect(() => {
     if (!organizationId) return
@@ -193,7 +208,7 @@ export function MembersTab({
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <h3 className="text-sm font-semibold text-emerald-600">Ajouter un membre existant</h3>
 
-          {sortedOrganizations.length > 0 && (
+          {!fixedOrganizationId && sortedOrganizations.length > 0 && (
             <select
               className="w-l rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
               value={organizationId}
@@ -267,7 +282,8 @@ export function MembersTab({
               disabled={adding || !addUserId || loading}
               type="button"
             >
-              {adding ? 'Ajout...' : '+ Ajouter'}
+              {adding ? 'Ajout...' : '+ Ajouter membre'}
+
               {/* kept for UI parity; lucide icon was removed to avoid unused import */}
             </button>
           </div>
