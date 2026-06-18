@@ -57,7 +57,7 @@ function AppLayout() {
             .filter((item) => {
               const role = user?.role
               if (role === 'admin') {
-                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/users', '/super-admin/users'].includes(item.to)
+                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/super-admin/users'].includes(item.to)
               }
               if (role === 'vendeur') {
                 return ['/', '/sales', '/stock'].includes(item.to)
@@ -126,7 +126,14 @@ function AppLayout() {
             />
             <Route path="sales" element={<SalesPage />} />
             <Route path="stock" element={<StockPage />} />
-            <Route path="users" element={<UsersPage />} />
+            <Route
+              path="users"
+              element={
+                <RoleGuard allowedRoles={['admin']}>
+                  <UsersPage />
+                </RoleGuard>
+              }
+            />
             <Route
               path="super-admin"
               element={
