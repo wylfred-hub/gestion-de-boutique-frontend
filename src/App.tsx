@@ -57,7 +57,7 @@ function AppLayout() {
             .filter((item) => {
               const role = user?.role
               if (role === 'admin') {
-                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/super-admin/users'].includes(item.to)
+                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/users'].includes(item.to)
               }
               if (role === 'vendeur') {
                 return ['/', '/sales', '/stock'].includes(item.to)
