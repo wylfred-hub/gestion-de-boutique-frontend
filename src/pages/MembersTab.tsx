@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Trash2, Users, Search } from 'lucide-react'
+import { Trash2, Users } from 'lucide-react'
 
-import { addOrganizationMember, getOrganizationMembers, removeOrganizationMember } from '../api/organizationMembers'
+import { createOrganizationMember, getOrganizationMembers, removeOrganizationMember } from '../api/organizationMembers'
 import { getApiErrorMessage } from '../api/client'
-import { searchUsers } from '../api/users'
 
 import { ApiError } from '../components/common/ApiError'
 import { Loading } from '../components/common/Loading'
+
 import type { Organization } from '../types'
 
-type MemberRole = 'owner' | 'admin' | 'vendeur'
+type MemberRole = 'admin' | 'vendeur'
+
 
 type MembersTabProps = {
   sortedOrganizations: Organization[]
@@ -56,13 +57,13 @@ export function MembersTab({
   const [membersError, setMembersError] = useState<string | null>(null)
   const [members, setMembers] = useState<MemberRow[]>([])
 
-  const [addUserId, setAddUserId] = useState('')
-  const [addUserLabel, setAddUserLabel] = useState('')
-  const [addUserQuery, setAddUserQuery] = useState('')
-  const [userSuggestions, setUserSuggestions] = useState<Array<{ id: string; name: string; email: string }>>([])
+  const [formName, setFormName] = useState('')
+  const [formEmail, setFormEmail] = useState('')
+  const [formPassword, setFormPassword] = useState('')
+  const [formRole, setFormRole] = useState<MemberRole>('admin')
 
-  const [addRole, setAddRole] = useState<MemberRole>('admin')
   const [adding, setAdding] = useState(false)
+
 
   const availableRoles = useMemo(() => ['admin', 'vendeur'] as MemberRole[], [])
 
@@ -107,16 +108,25 @@ export function MembersTab({
 
   async function handleAdd() {
     if (!organizationId) return
-    const userIdToSubmit = String(addUserId || '').trim()
-    if (!userIdToSubmit) return
+
+    const name = formName.trim()
+    const email = formEmail.trim()
+    const password = formPassword
+
+    if (!name || !email || password.length < 8) {
+      setMembersError('Nom, email et mot de passe (min 8 caractères) sont requis.')
+      return
+    }
 
     try {
       setAdding(true)
       setMembersError(null)
 
-      await addOrganizationMember(organizationId, {
-        user_id: userIdToSubmit,
-        role: addRole,
+      await createOrganizationMember(organizationId, {
+        name,
+        email,
+        password,
+        role: formRole,
       })
 
       const data = await getOrganizationMembers(organizationId)
@@ -128,11 +138,10 @@ export function MembersTab({
       }))
       setMembers(normalized)
 
-      setAddUserId('')
-      setAddUserLabel('')
-      setAddUserQuery('')
-      setUserSuggestions([])
-      setAddRole('admin')
+      setFormName('')
+      setFormEmail('')
+      setFormPassword('')
+      setFormRole('admin')
     } catch (caughtError) {
       setMembersError(getApiErrorMessage(caughtError, 'Impossible d’ajouter le membre.'))
     } finally {
@@ -140,39 +149,6 @@ export function MembersTab({
     }
   }
 
-  useEffect(() => {
-    let ignore = false
-
-    async function run() {
-      const q = addUserQuery.trim()
-      if (q.length < 2) {
-        setUserSuggestions([])
-        return
-      }
-
-      try {
-        const users = await searchUsers(q)
-        if (ignore) return
-
-        setUserSuggestions(
-          (Array.isArray(users) ? users : []).map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-          })),
-        )
-      } catch {
-        if (ignore) return
-        setUserSuggestions([])
-      }
-    }
-
-    void run()
-
-    return () => {
-      ignore = true
-    }
-  }, [addUserQuery])
 
   async function handleRemove(userId: string) {
     const confirmed = window.confirm('Retirer ce membre de l’organisation ?')
@@ -206,7 +182,8 @@ export function MembersTab({
 
       <div className="mt-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h3 className="text-sm font-semibold text-emerald-600">Ajouter un membre existant</h3>
+          <h3 className="text-sm font-semibold text-emerald-600">Créer un membre (admin)</h3>
+
 
           {!fixedOrganizationId && sortedOrganizations.length > 0 && (
             <select
@@ -225,39 +202,41 @@ export function MembersTab({
 
         <div className="grid gap-4 md:grid-cols-3 items-end">
           <div className="md:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-slate-700">Rechercher par nom ou email</label>
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-3 text-slate-400" />
-              <input
-                className="w-full rounded-md border border-slate-300 pl-9 pr-3 py-2 text-sm outline-none focus:border-emerald-500"
-                type="text"
-                value={addUserQuery}
-                onChange={(e) => {
-                  setAddUserQuery(e.target.value)
-                  setAddUserLabel('')
-                  setAddUserId('')
-                }}
-                placeholder="Nom de l'utilisateur..."
-              />
+            <label className="mb-1 block text-xs font-medium text-slate-700">Informations</label>
+            <div className="grid gap-3">
 
-              {userSuggestions.length > 0 && !addUserLabel && (
-                <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-lg">
-                  {userSuggestions.map((u) => (
-                    <button
-                      key={u.id}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
-                      onClick={() => {
-                        setAddUserId(String(u.id))
-                        setAddUserLabel(`${u.name} (${u.email})`)
-                        setAddUserQuery(`${u.name} (${u.email})`)
-                      }}
-                    >
-                      {u.name} <span className="text-slate-400">({u.email})</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">Nom</label>
+                <input
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  type="text"
+                  placeholder="Nom"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">Email</label>
+                <input
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  type="email"
+                  placeholder="email@exemple.com"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700">Mot de passe</label>
+                <input
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  value={formPassword}
+                  onChange={(e) => setFormPassword(e.target.value)}
+                  type="password"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
+
           </div>
 
           <div className="flex gap-2 items-center">
@@ -265,8 +244,8 @@ export function MembersTab({
               <label className="mb-1 block text-xs font-medium text-slate-700">Rôle</label>
               <select
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
-                value={addRole}
-                onChange={(e) => setAddRole(e.target.value as MemberRole)}
+                value={formRole}
+                onChange={(e) => setFormRole(e.target.value as MemberRole)}
               >
                 {availableRoles.map((r) => (
                   <option key={r} value={r}>
@@ -279,10 +258,11 @@ export function MembersTab({
             <button
               className="flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
               onClick={() => void handleAdd()}
-              disabled={adding || !addUserId || loading}
+              disabled={adding || loading}
               type="button"
             >
-              {adding ? 'Ajout...' : '+ Ajouter membre'}
+              {adding ? 'Création...' : '+ Créer et ajouter'}
+
 
               {/* kept for UI parity; lucide icon was removed to avoid unused import */}
             </button>
