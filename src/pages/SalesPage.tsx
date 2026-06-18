@@ -1,156 +1,3 @@
-// import { useEffect, useState } from 'react'
-// import { createSale, getSales, updateSaleStatus } from '../api/sales'
-// import { ApiError } from '../components/common/ApiError'
-// import { Loading } from '../components/common/Loading'
-// import { SaleForm } from '../components/sales/SaleForm'
-// import { SaleList } from '../components/sales/SaleList'
-// import { useSaleStore } from '../store/saleStore'
-// import type { SalePayload, SaleStatus } from '../types'
-// import { getApiErrorMessage } from '../api/client'
-
-// type ApiSale = {
-//   id: number | string
-//   sale_number?: string
-//   reference?: string
-//   status: SaleStatus
-//   total_amount?: number
-//   total?: number
-//   items?: unknown
-//   client?: {
-//     id: string | number
-//     name?: string
-//     full_name?: string
-//   } | null
-//   user?: {
-//     id?: string | number
-//     name?: string
-//     role?: string
-//   } | null
-// }
-
-// // Normalise la réponse backend pour correspondre à la shape attendue par le front.
-// function normalizeSalesFromApi(raw: ApiSale[]) {
-//   return (raw ?? []).map((sale) => {
-//     const clientFullName = sale.client?.full_name ?? (sale.client as { fullName?: string } | null)?.fullName
-
-//     const normalizedClient = sale.client
-//       ? {
-//           ...sale.client,
-//           name: sale.client.name ?? clientFullName,
-//         }
-//       : sale.client
-
-//     const saleItems = (sale as { items?: unknown }).items
-//     const items = Array.isArray(saleItems) ? saleItems : []
-
-//     return {
-//       ...sale,
-//       id: String(sale.id),
-//       reference: sale.reference ?? sale.sale_number,
-//       status: sale.status,
-//       total: Number(sale.total ?? sale.total_amount ?? 0) || 0,
-//       client: normalizedClient,
-//       items,
-//       user: sale.user,
-//     }
-//   })
-// }
-
-// export function SalesPage() {
-//   const sales = useSaleStore((state) => state.sales)
-//   const setSales = useSaleStore((state) => state.setSales)
-//   const upsertSale = useSaleStore((state) => state.upsertSale)
-//   const [loading, setLoading] = useState(true)
-//   const [saving, setSaving] = useState(false)
-//   const [error, setError] = useState<string | null>(null)
-
-//   useEffect(() => {
-//     let ignore = false
-
-//     async function loadSales() {
-//       try {
-//         setLoading(true)
-//         setError(null)
-//         const { items } = await getSales()
-
-//         if (!ignore) {
-//           setSales(normalizeSalesFromApi(items) as typeof sales)
-//         }
-
-//       } catch (caughtError) {
-//         if (!ignore) {
-//           const message = getApiErrorMessage(caughtError, "Impossible de charger les ventes depuis l'API.")
-//           setError(message)
-//           console.error('getSales error:', caughtError)
-//         }
-//       } finally {
-//         if (!ignore) {
-//           setLoading(false)
-//         }
-//       }
-//     }
-
-//     void loadSales()
-
-//     return () => {
-//       ignore = true
-//     }
-//   }, [setSales])
-
-//   async function handleCreateSale(payload: SalePayload) {
-//     try {
-//       setSaving(true)
-//       setError(null)
-//       const sale = await createSale(payload)
-
-//       // Le backend peut renvoyer une sale avec items absents.
-//       // On force au minimum la compatibilité UI.
-//       const normalized = {
-//         ...sale,
-//         id: String(sale.id),
-//         reference: (sale as { reference?: string; sale_number?: string }).reference ?? (sale as { reference?: string; sale_number?: string }).sale_number,
-//         total: Number((sale as { total?: number; total_amount?: number }).total ?? (sale as { total?: number; total_amount?: number }).total_amount ?? 0) || 0,
-//         items: Array.isArray((sale as { items?: unknown }).items) ? (sale as { items?: unknown }).items : [],
-//       } as typeof sales[number]
-
-//       upsertSale(normalized)
-//     } catch (caughtError) {
-//       const message = getApiErrorMessage(caughtError, 'Impossible de creer la vente.')
-//       setError(message)
-//       console.error('createSale error:', caughtError)
-//     } finally {
-//       setSaving(false)
-//     }
-//   }
-
-//   async function handleStatusChange(saleId: string, status: SaleStatus) {
-//     try {
-//       setError(null)
-//       const sale = await updateSaleStatus(saleId, status)
-//       upsertSale(sale as unknown as typeof sales[number])
-//     } catch (caughtError) {
-//       const message = getApiErrorMessage(caughtError, "Impossible de changer l'etat de la vente.")
-//       setError(message)
-//       console.error('updateSaleStatus error:', caughtError)
-//     }
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       <div>
-//         <h1 className="text-2xl font-bold">Ventes</h1>
-//         <p className="text-sm text-slate-500">Creation, suivi et changements d'etat.</p>
-//       </div>
-
-//       {error ? <ApiError message={error} /> : null}
-//       <SaleForm loading={saving} onSubmit={handleCreateSale} />
-//       {loading ? <Loading /> : <SaleList sales={sales} onStatusChange={handleStatusChange} />}
-//     </div>
-//   )
-// }
-
-
-
 import { useEffect, useState } from 'react'
 import { createSale, deleteSale, getSales, updateSale, updateSaleStatus } from '../api/sales'
 import { ApiError } from '../components/common/ApiError'
@@ -183,16 +30,71 @@ type ApiSale = {
   } | null
 }
 
+type ApiSaleItem = {
+  id?: string | number
+  sale_id?: string | number
+  product_id?: string | number
+  productId?: string | number
+  saleId?: string | number
+  quantity?: number
+  unit_price?: number
+  total_price?: number
+  unitPrice?: number
+  totalPrice?: number
+  product?: unknown
+}
+
 function normalizeSalesFromApi(raw: ApiSale[] | unknown[]) {
-  // Évite que TS infère le type de l'élément en `unknown`.
   const list = (raw as ApiSale[] | undefined) ?? []
+
   return list.map((sale) => {
     const clientFullName = sale.client?.full_name ?? (sale.client as { fullName?: string } | null)?.fullName
     const normalizedClient = sale.client
       ? { ...sale.client, name: sale.client.name ?? clientFullName }
       : sale.client
+
     const saleItems = (sale as { items?: unknown }).items
     const items = Array.isArray(saleItems) ? saleItems : []
+
+    const normalizedItems = items.map((it) => {
+      const item = it as ApiSaleItem
+
+      const unitPrice =
+        typeof item.unitPrice === 'number'
+          ? item.unitPrice
+          : typeof item.unit_price === 'number'
+            ? item.unit_price
+            : Number(item.unitPrice ?? item.unit_price ?? 0)
+
+      const totalPrice =
+        typeof item.totalPrice === 'number'
+          ? item.totalPrice
+          : typeof item.total_price === 'number'
+            ? item.total_price
+            : Number(item.totalPrice ?? item.total_price ?? 0)
+
+      const productId =
+        (item.productId as string | number | undefined) ??
+        (item.product_id as string | number | undefined) ??
+        ''
+
+      const saleId =
+        (item.saleId as string | number | undefined) ??
+        (item.sale_id as string | number | undefined) ??
+        ''
+
+      return {
+        ...item,
+        productId: String(productId),
+        saleId: String(saleId),
+        unitPrice,
+        total: totalPrice,
+        totalPrice,
+        unit_price: item.unit_price,
+        total_price: item.total_price,
+      }
+    })
+
     return {
       ...sale,
       id: String(sale.id),
@@ -200,7 +102,7 @@ function normalizeSalesFromApi(raw: ApiSale[] | unknown[]) {
       status: sale.status,
       total: Number(sale.total ?? sale.total_amount ?? 0) || 0,
       client: normalizedClient,
-      items,
+      items: normalizedItems,
       user: sale.user,
     }
   })
@@ -239,43 +141,52 @@ export function SalesPage() {
 
   useEffect(() => {
     let ignore = false
+
     async function loadSales() {
       try {
         setLoading(true)
         setError(null)
-        const { items } = await getSales()
-        if (!ignore) {
-          // backend peut renvoyer sale_number: null; on normalise vers une forme sans null
-          const normalized = normalizeSalesFromApi(items).map((s) => {
-            const sale_number = (s as { sale_number?: string | null }).sale_number
-            const reference = s.reference ?? sale_number ?? String(s.id)
-            return { ...s, reference }
-          })
 
-          setSales(normalized as typeof sales)
-        }
+        const { items } = await getSales()
+        if (ignore) return
+
+        const normalized = normalizeSalesFromApi(items)
+        setSales(normalized as unknown as typeof sales)
       } catch (caughtError) {
-        if (!ignore) setError(getApiErrorMessage(caughtError, "Impossible de charger les ventes."))
+        if (!ignore) setError(getApiErrorMessage(caughtError, 'Impossible de charger les ventes.'))
       } finally {
         if (!ignore) setLoading(false)
       }
     }
+
     void loadSales()
-    return () => { ignore = true }
+    return () => {
+      ignore = true
+    }
   }, [setSales])
 
   async function handleCreateSale(payload: SalePayload) {
     try {
       setSaving(true)
       setError(null)
+
       const sale = await createSale(payload)
-      const normalized = {
-        ...sale,
+
+      const normalized: Sale = {
+        ...(sale as unknown as Sale),
         id: String(sale.id),
-        reference: (sale as { reference?: string; sale_number?: string }).reference ?? (sale as { reference?: string; sale_number?: string }).sale_number,
-        total: Number((sale as { total?: number; total_amount?: number }).total ?? (sale as { total?: number; total_amount?: number }).total_amount ?? 0) || 0,
-        items: Array.isArray((sale as { items?: unknown }).items) ? (sale as { items?: unknown }).items : [],
-      } as typeof sales[number]
+        reference:
+          (sale as { reference?: string; sale_number?: string }).reference ??
+          (sale as { reference?: string; sale_number?: string }).sale_number ??
+          String(sale.id),
+        total:
+          Number(
+            (sale as { total?: number; total_amount?: number }).total ??
+              (sale as { total?: number; total_amount?: number }).total_amount ??
+              0
+          ) || 0,
+      }
+
       upsertSale(normalized)
     } catch (caughtError) {
       setError(getApiErrorMessage(caughtError, 'Impossible de créer la vente.'))
@@ -286,9 +197,11 @@ export function SalesPage() {
 
   async function handleEditSale(payload: SalePayload) {
     if (!selectedSale) return
+
     try {
       setSaving(true)
       setError(null)
+
       const sale = await updateSale(selectedSale.id, payload)
       upsertSale(sale as unknown as typeof sales[number])
       closeModal()
@@ -301,9 +214,11 @@ export function SalesPage() {
 
   async function handleDeleteSale() {
     if (!selectedSale) return
+
     try {
       setSaving(true)
       setError(null)
+
       await deleteSale(selectedSale.id)
       removeSale(selectedSale.id)
       closeModal()
@@ -335,7 +250,9 @@ export function SalesPage() {
 
       <SaleForm loading={saving} onSubmit={handleCreateSale} />
 
-      {loading ? <Loading /> : (
+      {loading ? (
+        <Loading />
+      ) : (
         <SaleList
           sales={sales}
           onStatusChange={handleStatusChange}
@@ -344,7 +261,6 @@ export function SalesPage() {
         />
       )}
 
-      {/* Modal modifier */}
       {modalMode === 'edit' && selectedSale && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
@@ -355,11 +271,7 @@ export function SalesPage() {
 
             {error && <ApiError message={error} />}
 
-            <SaleForm
-              loading={saving}
-              initialValues={selectedSale}
-              onSubmit={handleEditSale}
-            />
+            <SaleForm loading={saving} initialValues={selectedSale} onSubmit={handleEditSale} />
 
             <div className="mt-4 flex justify-end">
               <button
@@ -375,7 +287,6 @@ export function SalesPage() {
         </div>
       )}
 
-      {/* Modal supprimer */}
       {modalMode === 'delete' && selectedSale && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
@@ -385,7 +296,11 @@ export function SalesPage() {
               <strong>{selectedSale.reference ?? selectedSale.id}</strong> ? Le stock sera réintégré.
             </p>
 
-            {error && <div className="mt-3"><ApiError message={error} /></div>}
+            {error && (
+              <div className="mt-3">
+                <ApiError message={error} />
+              </div>
+            )}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -411,3 +326,4 @@ export function SalesPage() {
     </div>
   )
 }
+

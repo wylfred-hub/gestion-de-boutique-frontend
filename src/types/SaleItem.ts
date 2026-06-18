@@ -14,6 +14,14 @@ export type SaleItem = {
   total_price?: number
 }
 
+// (Compat) items renvoyés par le backend peuvent être en snake_case.
+export type SaleItemFromApi = Omit<SaleItem, 'saleId' | 'productId' | 'total'> & {
+  sale_id?: string
+  product_id?: string
+  total_price?: number
+}
+
+
 
 export type SaleItemPayload = {
   productId: string
