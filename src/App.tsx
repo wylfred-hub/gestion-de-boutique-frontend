@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { Boxes, ChartNoAxesCombined, LayoutDashboard, Package, ReceiptText, Tags, Users } from 'lucide-react'
+import { Boxes, ChartNoAxesCombined, LayoutDashboard, Package, ReceiptText, Tags, Users, UsersIcon } from 'lucide-react'
 
 import { PrivateRoute } from './components/auth/PrivateRoute'
 import { RoleGuard } from './components/auth/RoleGuard'
@@ -26,6 +26,7 @@ const navigation = [
   { to: '/categories', label: 'Catégories', icon: Tags },
   { to: '/sales', label: 'Ventes', icon: ReceiptText },
   { to: '/stock', label: 'Stock', icon: Boxes },
+  { to: '/users', label: 'Utilisateur', icon: UsersIcon },
   { to: '/reports', label: 'Rapports', icon: ChartNoAxesCombined },
   // Gestion membres (Super Admin)
   { to: '/super-admin-dashboard', label: 'Dashboard SA', icon: LayoutDashboard },
