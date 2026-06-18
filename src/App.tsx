@@ -138,7 +138,7 @@ function AppLayout() {
             <Route
               path="super-admin/users"
               element={
-                <RoleGuard allowedRoles={['super_admin']}>
+                <RoleGuard allowedRoles={['super_admin', 'admin']}>
                   <SuperAdminUsersManagementPage />
                 </RoleGuard>
               }
