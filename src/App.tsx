@@ -27,7 +27,7 @@ const navigation = [
   { to: '/sales', label: 'Ventes', icon: ReceiptText },
   { to: '/stock', label: 'Stock', icon: Boxes },
   { to: '/reports', label: 'Rapports', icon: ChartNoAxesCombined },
-  // Super Admin uniquement
+  // Gestion membres (Super Admin)
   { to: '/super-admin-dashboard', label: 'Dashboard SA', icon: LayoutDashboard },
   { to: '/super-admin', label: 'Organisations', icon: Users },
   { to: '/super-admin/users', label: 'Vendeurs / Membres', icon: Users },
@@ -57,7 +57,7 @@ function AppLayout() {
             .filter((item) => {
               const role = user?.role
               if (role === 'admin') {
-                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/users'].includes(item.to)
+                return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/users', '/super-admin/users'].includes(item.to)
               }
               if (role === 'vendeur') {
                 return ['/', '/sales', '/stock'].includes(item.to)
