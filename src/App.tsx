@@ -20,6 +20,8 @@ import { SuperAdminDashboardPage } from './pages/super-admin/SuperAdminDashboard
 import { OrganizationSelectPage } from './pages/OrganizationSelectPage'
 import { OrganizationSelectedGuard } from './components/auth/OrganizationSelectedGuard'
 
+console.log("App.tsx loaded")
+
 const navigation = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/products', label: 'Produits', icon: Package },
