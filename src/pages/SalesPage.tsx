@@ -183,8 +183,10 @@ type ApiSale = {
   } | null
 }
 
-function normalizeSalesFromApi(raw: ApiSale[]) {
-  return (raw ?? []).map((sale) => {
+function normalizeSalesFromApi(raw: ApiSale[] | unknown[]) {
+  // Évite que TS infère le type de l'élément en `unknown`.
+  const list = (raw as ApiSale[] | undefined) ?? []
+  return list.map((sale) => {
     const clientFullName = sale.client?.full_name ?? (sale.client as { fullName?: string } | null)?.fullName
     const normalizedClient = sale.client
       ? { ...sale.client, name: sale.client.name ?? clientFullName }
@@ -242,7 +244,16 @@ export function SalesPage() {
         setLoading(true)
         setError(null)
         const { items } = await getSales()
-        if (!ignore) setSales(normalizeSalesFromApi(items) as typeof sales)
+        if (!ignore) {
+          // backend peut renvoyer sale_number: null; on normalise vers une forme sans null
+          const normalized = normalizeSalesFromApi(items).map((s) => {
+            const sale_number = (s as { sale_number?: string | null }).sale_number
+            const reference = s.reference ?? sale_number ?? String(s.id)
+            return { ...s, reference }
+          })
+
+          setSales(normalized as typeof sales)
+        }
       } catch (caughtError) {
         if (!ignore) setError(getApiErrorMessage(caughtError, "Impossible de charger les ventes."))
       } finally {

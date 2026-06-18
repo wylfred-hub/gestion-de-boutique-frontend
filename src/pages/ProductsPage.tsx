@@ -175,7 +175,7 @@
 // }
 
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { createProduct, deleteProduct, getProducts, updateProduct } from '../api/products'
 import { ApiError } from '../components/common/ApiError'

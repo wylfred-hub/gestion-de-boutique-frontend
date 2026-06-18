@@ -2,7 +2,10 @@ export type * from './Category'
 export type * from './Client'
 export type * from './Organization'
 export type * from './Product'
+
 export type * from './Sale'
-export type * from './SaleItem'
+
+
 export type * from './StockMovement'
 export type * from './User'
+

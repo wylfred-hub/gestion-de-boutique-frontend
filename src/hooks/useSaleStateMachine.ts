@@ -1,11 +1,11 @@
 import type { SaleStatus } from '../types'
 
 const transitions: Record<SaleStatus, SaleStatus[]> = {
-  draft: ['confirmed', 'cancelled'],
-  confirmed: ['paid', 'cancelled'],
-  paid: [],
-  cancelled: [],
+  encours: ['confirmee', 'annulee'],
+  confirmee: ['annulee'],
+  annulee: [],
 }
+
 
 export function useSaleStateMachine(status: SaleStatus) {
   const nextStatuses = transitions[status] ?? []

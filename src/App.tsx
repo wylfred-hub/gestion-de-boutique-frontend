@@ -55,17 +55,14 @@ function AppLayout() {
         <nav className="space-y-1">
           {navigation
             .filter((item) => {
-              if (user?.role === 'vendeur') {
-                return ['/', '/sales', '/stock'].includes(item.to)
-              }
-              if (user?.role === 'admin') {
+              const role = user?.role
+              if (role === 'admin') {
                 return ['/', '/products', '/categories', '/sales', '/stock', '/reports', '/users'].includes(item.to)
-              } 
-              // Admin d’orga (pivot role) : on mappe vers la vue /users
-              if (user?.role === 'vendeur') {
+              }
+              if (role === 'vendeur') {
                 return ['/', '/sales', '/stock'].includes(item.to)
               }
-              if (user?.role === 'super_admin') {
+              if (role === 'super_admin') {
                 return ['/super-admin-dashboard', '/super-admin', '/super-admin/users'].includes(item.to)
               }
               return false

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Trash2, Users, Search } from 'lucide-react'
+import { Trash2, Users, Search } from 'lucide-react'
 
 import { addOrganizationMember, getOrganizationMembers, removeOrganizationMember } from '../api/organizationMembers'
 import { getApiErrorMessage } from '../api/client'
@@ -41,11 +41,9 @@ export function MembersTab({
   const [addUserLabel, setAddUserLabel] = useState('')
   const [addUserQuery, setAddUserQuery] = useState('')
   const [userSuggestions, setUserSuggestions] = useState<Array<{ id: string; name: string; email: string }>>([])
-  const [usersSearching, setUsersSearching] = useState(false)
 
   const [addRole, setAddRole] = useState<MemberRole>('admin')
   const [adding, setAdding] = useState(false)
-
 
   const availableRoles = useMemo(() => ['admin', 'vendeur'] as MemberRole[], [])
 
@@ -127,7 +125,6 @@ export function MembersTab({
     }
   }
 
-
   useEffect(() => {
     let ignore = false
 
@@ -138,10 +135,10 @@ export function MembersTab({
         return
       }
 
-      setUsersSearching(true)
       try {
         const users = await searchUsers(q)
         if (ignore) return
+
         setUserSuggestions(
           (Array.isArray(users) ? users : []).map((u) => ({
             id: u.id,
@@ -152,8 +149,6 @@ export function MembersTab({
       } catch {
         if (ignore) return
         setUserSuggestions([])
-      } finally {
-        if (!ignore) setUsersSearching(false)
       }
     }
 
@@ -171,6 +166,7 @@ export function MembersTab({
     try {
       setMembersError(null)
       await removeOrganizationMember(organizationId, userId)
+
       const data = await getOrganizationMembers(organizationId)
       const normalized: MemberRow[] = (Array.isArray(data) ? data : []).map((u) => ({
         id: u.id,
@@ -195,10 +191,8 @@ export function MembersTab({
 
       <div className="mt-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h3 className="text-sm font-semibold text-emerald-600">
-            Ajouter un membre existant
-          </h3>
-          
+          <h3 className="text-sm font-semibold text-emerald-600">Ajouter un membre existant</h3>
+
           {sortedOrganizations.length > 0 && (
             <select
               className="w-l rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
@@ -206,72 +200,85 @@ export function MembersTab({
               onChange={(e) => setOrganizationId(e.target.value)}
             >
               {sortedOrganizations.map((org) => (
-                <option key={org.id} value={org.id} className='w-full'>{org.name}</option>
+                <option key={org.id} value={org.id} className="w-full">
+                  {org.name}
+                </option>
               ))}
             </select>
           )}
         </div>
 
-          <div className="grid gap-4 md:grid-cols-3 items-end">
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-medium text-slate-700">Rechercher par nom ou email</label>
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-3 text-slate-400" />
-                <input
-                  className="w-full rounded-md border border-slate-300 pl-9 pr-3 py-2 text-sm outline-none focus:border-emerald-500"
-                  type="text"
-                  value={addUserQuery}
-                  onChange={(e) => {
-                    setAddUserQuery(e.target.value)
-                    setAddUserLabel('')
-                    setAddUserId('')
-                  }}
-                  placeholder="Nom de l'utilisateur..."
-                />
-                {userSuggestions.length > 0 && !addUserLabel && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-lg">
-                    {userSuggestions.map((u) => (
-                      <button
-                        key={u.id}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
-                        onClick={() => {
-                          setAddUserId(String(u.id))
-                          setAddUserLabel(`${u.name} (${u.email})`)
-                          setAddUserQuery(`${u.name} (${u.email})`)
-                        }}
-                      >
-                        {u.name} <span className="text-slate-400">({u.email})</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2 items-center">
-              <div className="flex-1">
-                <label className="mb-1 block text-xs font-medium text-slate-700">Rôle</label>
-                <select
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
-                  value={addRole}
-                  onChange={(e) => setAddRole(e.target.value as MemberRole)}
-                >
-                  {availableRoles.map((r) => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <button
-                className="flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
-                onClick={() => void handleAdd()}
-                disabled={adding || !addUserId}
-                 disabled={loading}
-              >
-                {loading ? 'Création...' : '+ Ajouter'}
-                {/* <Plus size={16} />   */}
-              </button>
+        <div className="grid gap-4 md:grid-cols-3 items-end">
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-slate-700">Rechercher par nom ou email</label>
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-3 text-slate-400" />
+              <input
+                className="w-full rounded-md border border-slate-300 pl-9 pr-3 py-2 text-sm outline-none focus:border-emerald-500"
+                type="text"
+                value={addUserQuery}
+                onChange={(e) => {
+                  setAddUserQuery(e.target.value)
+                  setAddUserLabel('')
+                  setAddUserId('')
+                }}
+                placeholder="Nom de l'utilisateur..."
+              />
+
+              {userSuggestions.length > 0 && !addUserLabel && (
+                <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-lg">
+                  {userSuggestions.map((u) => (
+                    <button
+                      key={u.id}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
+                      onClick={() => {
+                        setAddUserId(String(u.id))
+                        setAddUserLabel(`${u.name} (${u.email})`)
+                        setAddUserQuery(`${u.name} (${u.email})`)
+                      }}
+                    >
+                      {u.name} <span className="text-slate-400">({u.email})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-slate-700">Rôle</label>
+              <select
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+                value={addRole}
+                onChange={(e) => setAddRole(e.target.value as MemberRole)}
+              >
+                {availableRoles.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              className="flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              onClick={() => void handleAdd()}
+              disabled={adding || !addUserId || loading}
+              type="button"
+            >
+              {adding ? 'Ajout...' : '+ Ajouter'}
+              {/* kept for UI parity; lucide icon was removed to avoid unused import */}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {membersError ? <div className="mt-4"><ApiError message={membersError} /></div> : null}
+      {membersError ? (
+        <div className="mt-4">
+          <ApiError message={membersError} />
+        </div>
+      ) : null}
 
       <div className="mt-4 overflow-x-auto">
         {loading ? (
@@ -325,3 +332,4 @@ export function MembersTab({
     </section>
   )
 }
+

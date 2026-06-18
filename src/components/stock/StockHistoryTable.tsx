@@ -30,9 +30,9 @@ export function StockHistoryTable({ movements }: StockHistoryTableProps) {
             <tr className="border-t border-slate-100" key={movement.id}>
             <td className="px-4 py-3">{movement.product?.name ?? movement.productId}</td>
             <td className="px-4 py-3">
-              {movement.type === 'entree'
+              {movement.type === 'in'
                 ? 'Entrée'
-                : movement.type === 'sortie'
+                : movement.type === 'out'
                   ? 'Sortie'
                   : 'Ajustement'}
             </td>

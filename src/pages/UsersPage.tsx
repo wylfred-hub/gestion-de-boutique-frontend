@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Users, UsersRound } from 'lucide-react'
 
 import { MembersTab } from './MembersTab'
-import { SuperAdminCreateUserButton } from './SuperAdminCreateUserButton'
+
 import { useAuthStore } from '../store/authStore'
 import { useOrganizationStore } from '../store/organizationStore'
 

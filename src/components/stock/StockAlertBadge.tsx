@@ -5,7 +5,8 @@ type StockAlertBadgeProps = {
 }
 
 export function StockAlertBadge({ product }: StockAlertBadgeProps) {
-  const isLow = product.stockQuantity <= product.alertThreshold
+  const threshold = product.alertThreshold ?? 0
+  const isLow = product.stockQuantity <= threshold
 
   return (
     <span className={`rounded px-2 py-1 text-xs font-semibold ${isLow ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}>

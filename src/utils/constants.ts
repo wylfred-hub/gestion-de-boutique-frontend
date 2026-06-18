@@ -17,8 +17,8 @@ export const ROLES: Record<Uppercase<UserRole>, UserRole> = {
 }
 
 export const SALE_STATUS_LABELS: Record<SaleStatus, string> = {
-  draft: 'Brouillon',
-  confirmed: 'Confirmee',
-  paid: 'Payee',
-  cancelled: 'Annulee',
+  encours: 'Encours',
+  confirmee: 'Confirmée',
+  annulee: 'Annulée',
 }
+

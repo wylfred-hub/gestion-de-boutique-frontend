@@ -21,8 +21,8 @@ export function SaleItemTable({ items = [] }: SaleItemTableProps) {
           <tr className="border-t border-slate-100" key={item.id}>
             <td className="py-2">{item.product?.name ?? (item.productId ?? '—')}</td>
             <td className="py-2">{item.quantity ?? '—'}</td>
-            <td className="py-2">{formatCurrency((item.unitPrice ?? item.unit_price ?? 0) as number)}</td>
-            <td className="py-2">{formatCurrency((item.total ?? item.total_price ?? 0) as number)}</td>
+            <td className="py-2">{formatCurrency(Number(item.unitPrice ?? 0))}</td>
+            <td className="py-2">{formatCurrency(Number(item.totalPrice ?? 0))}</td>
           </tr>
         ))}
       </tbody>

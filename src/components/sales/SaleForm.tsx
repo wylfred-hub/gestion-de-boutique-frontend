@@ -99,8 +99,12 @@ export function SaleForm({ loading = false, initialValues = null, onSubmit }: Sa
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    const clientIdTrimmed = clientId.trim()
     const payload: SalePayload = {
-      clientId: clientId.trim() ? clientId.trim() : undefined,
+      clientId: clientIdTrimmed ? clientIdTrimmed : '',
+      discountType: initialValues?.discountType ?? null,
+      discountValue: initialValues?.discountValue ?? 0,
+      notes: initialValues?.notes ?? null,
       items: lines
         .filter((l) => l.productId)
         .map((l) => ({

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import type { CreateUserPayload } from '../../api/users'
-import type { UserRole } from '../../types'
+import type { CreateUserPayload, UserRole } from '../api/users'
 import { ApiError } from '../components/common/ApiError'
 
 type UserFormProps = {
